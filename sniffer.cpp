@@ -1,4 +1,6 @@
 #include "sniffer.h"
+#include <Mstcpip.h>
+
 
 std::string Sniffer::getProtocolStr(unsigned char protocol) const {
 	std::string protocolStr;
@@ -66,13 +68,12 @@ Sniffer::Sniffer(const std::string& ipStr, std::ostream& fileOutput) : fOut(file
 		error = true;
 		return;
 	}
-
-	unsigned long fOne = 1;
-
-	if (ioctlsocket(sock, 0x98000001, &fOne) != NOERROR) {
-		std::cout << "ioctlsocket failed\n";
-		error = true;
-		return;
+	
+	unsigned long dwValue = RCVALL_ON;
+	unsigned long dwBytesReturned = 0;
+	if (WSAIoctl(sock, SIO_RCVALL, &dwValue, sizeof(dwValue), NULL, 0, &dwBytesReturned, NULL, NULL) == SOCKET_ERROR) {
+		std::cout << "Ioctl failed with error code: ";
+		std::cout << WSAGetLastError() << "\n";		
 	}
 }
 
